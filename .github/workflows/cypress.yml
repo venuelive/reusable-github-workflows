@@ -1,0 +1,147 @@
+name: Cypress
+on:
+  workflow_call:
+    secrets:
+      GH_PAT:
+        required: true
+      FIREBASE_API_KEY:
+        required: true
+      FIREBASE_APP_ID:
+        required: true
+      FIREBASE_PRIVATE_KEY:
+        required: true
+      FIREBASE_PRIVATE_KEY_ID:
+        required: true
+jobs:
+  cypress-run:
+    runs-on: ubuntu-20.04
+    services:
+      postgres:
+        image: postgres:12.10
+        env:
+          POSTGRES_USER: venue
+          POSTGRES_PASSWORD: venue
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:5.0.12
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      # Checkout source code
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          repository: venuelive/venue-e2e
+          ref: master
+          token: ${{ secrets.GH_PAT }}
+          path: e2e
+      - name: Checkout frontend
+        uses: actions/checkout@v3
+        with:
+          repository: venuelive/venue-ui
+          ref: master
+          token: ${{ secrets.GH_PAT }}
+          path: frontend
+      - name: Checkout backend
+        uses: actions/checkout@v3
+        with:
+          repository: venuelive/venue-rails
+          ref: master
+          token: ${{ secrets.GH_PAT }}
+          path: backend
+
+      # Install dependencies
+      - name: Set up ruby and install dependencies
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '2.7.6'
+          bundler-cache: true
+          working-directory: backend
+      - name: Set up node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16.14.0'
+      - name: Get yarn cache directory path
+        id: yarn-cache-dir-path
+        run: echo "::set-output name=dir::$(yarn cache dir)"
+      - name: Restore yarn cache
+        uses: actions/cache@v3
+        id: yarn-cache
+        with:
+          path: ${{ steps.yarn-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-yarn-${{ hashFiles('**/yarn.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-yarn-
+      - name: Install npm dependencies
+        # FIXME: the prod build is requiring some of the dev dependencies
+        # env:
+        #   NODE_ENV: production
+        run: yarn install --prefer-offline --frozen-lockfile
+        working-directory: frontend
+
+      # Build
+      - name: Build frontend assets
+        env:
+          REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+          REACT_APP_FIREBASE_AUTH_DOMAIN: tryvenue-daniel.firebaseapp.com
+          REACT_APP_FIREBASE_DATABASE_URL: https://tryvenue-daniel.firebaseio.com
+          REACT_APP_FIREBASE_PROJECT_ID: tryvenue-daniel
+        run: yarn build
+        working-directory: frontend
+
+      # Run app
+      - name: Start backend app
+        env:
+          CYPRESS: 1
+          DATABASE_URL: postgres://venue:venue@localhost:5432
+          FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
+          FIREBASE_CLIENT_EMAIL: firebase-adminsdk-7bifb@tryvenue-daniel.iam.gserviceaccount.com
+          FIREBASE_CLIENT_ID: 101784888911996559399
+          FIREBASE_PRIVATE_KEY: ${{ secrets.FIREBASE_PRIVATE_KEY }}
+          FIREBASE_PRIVATE_KEY_ID: ${{ secrets.FIREBASE_PRIVATE_KEY_ID }}
+          FIREBASE_PROJECT_ID: tryvenue-daniel
+        run: |
+          bundle exec rake db:create db:migrate
+          bundle exec rails server &
+          bundle exec sidekiq &
+        working-directory: backend
+      - name: Start frontend app
+        run: npx serve -p 3000 -s build &
+        working-directory: frontend
+
+      # Run tests
+      - name: Run cypress tests
+        uses: cypress-io/github-action@v2
+        with:
+          browser: chrome
+          config: defaultCommandTimeout=30000
+          headless: true
+          working-directory: e2e
+          wait-on: 'http://localhost:3000, http://localhost:5000'
+          wait-on-timeout: 300
+
+      # Upload test artifacts
+      - name: Upload test screenshots
+        uses: actions/upload-artifact@v2
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: e2e/cypress/screenshots
+      - name: Upload test videos
+        uses: actions/upload-artifact@v2
+        if: always()
+        with:
+          name: cypress-videos
+          path: e2e/cypress/videos
