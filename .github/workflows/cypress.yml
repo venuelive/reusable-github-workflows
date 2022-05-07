@@ -3,7 +3,7 @@ on:
   workflow_call:
     secrets:
       CYPRESS_RECORD_KEY:
-        required: true
+        required: false
       GH_PAT:
         required: true
       FIREBASE_API_KEY:
@@ -130,15 +130,14 @@ jobs:
           browser: chrome
           config: defaultCommandTimeout=30000
           headless: true
-          record: true
-          group: 'Chrome'
+          record: ${{ !!secrets.CYPRESS_RECORD_KEY }}
+          group: ${{ secrets.CYPRESS_RECORD_KEY && 'Chrome' }}
           working-directory: e2e
           wait-on: 'http://localhost:3000, http://localhost:5000'
           wait-on-timeout: 300
         env:
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
-
 
       # Upload test artifacts
       - name: Upload test screenshots
