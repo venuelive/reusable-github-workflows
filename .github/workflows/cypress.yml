@@ -118,9 +118,8 @@ jobs:
           REACT_APP_AGORA_APP_ID: ${{ secrets.AGORA_APP_ID }}
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: tryvenue-daniel.firebaseapp.com
-          REACT_APP_FIREBASE_PROJECT_ID: tryvenue-daniel
           REACT_APP_FIREBASE_STORAGE_BUCKET: bucket
+          REACT_APP_FIREBASE_PROJECT_ID: emulator-test
           REACT_APP_FIREBASE_EMULATOR: 1
         run: yarn build
         working-directory: frontend
@@ -135,14 +134,14 @@ jobs:
           DATABASE_URL: postgres://venue:venue@localhost:5432
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           FIRESTORE_EMULATOR_HOST: 127.0.0.1:8080
-          FIREBASE_PROJECT_ID: tryvenue-daniel
+          FIREBASE_PROJECT_ID: emulator-test
         run: |
           bundle exec rake db:create db:migrate
           bundle exec rails server &
           bundle exec sidekiq &
         working-directory: backend
       - name: Start frontend app
-        run: firebase emulators:exec 'npx serve -p 3000 -s build &'
+        run: firebase emulators:exec --project emulator-test 'npx serve -p 3000 -s build &'
         working-directory: frontend
 
       # Run tests
