@@ -15,6 +15,10 @@ on:
         required: false
         type: string
     secrets:
+      AGORA_APP_CERTIFICATE:
+        required: true
+      AGORA_APP_ID:
+        required: true
       CYPRESS_RECORD_KEY:
         required: false
       GH_PAT:
@@ -108,17 +112,22 @@ jobs:
       # Build
       - name: Build frontend assets
         env:
+          REACT_APP_AGORA_APP_ID: ${{ secrets.AGORA_APP_ID }}
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
           REACT_APP_FIREBASE_AUTH_DOMAIN: tryvenue-daniel.firebaseapp.com
           REACT_APP_FIREBASE_DATABASE_URL: https://tryvenue-daniel.firebaseio.com
           REACT_APP_FIREBASE_PROJECT_ID: tryvenue-daniel
+          REACT_APP_FIREBASE_STORAGE_BUCKET: tryvenue-daniel.appstop.com
         run: yarn build
         working-directory: frontend
 
       # Run app
       - name: Start backend app
         env:
+          AGORA_APP_CERTIFICATE: ${{ secrets.AGORA_APP_CERTIFICATE }}
+          AGORA_APP_ID: ${{ secrets.AGORA_APP_ID }}
+          ALGOLIA_USERS_INDEX: test_cypress
           CYPRESS: 1
           DATABASE_URL: postgres://venue:venue@localhost:5432
           FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
