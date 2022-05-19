@@ -147,7 +147,7 @@ jobs:
         uses: cypress-io/github-action@v2
         with:
           browser: chrome
-          config: defaultCommandTimeout=30000
+          config: defaultCommandTimeout=30000,videoCompression=false
           headless: true
           record: ${{ !!secrets.CYPRESS_RECORD_KEY }}
           group: ${{ secrets.CYPRESS_RECORD_KEY && 'Chrome' }}
