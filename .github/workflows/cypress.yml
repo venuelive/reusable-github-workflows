@@ -165,9 +165,11 @@ jobs:
         with:
           name: cypress-screenshots
           path: e2e/cypress/screenshots
+          retention-days: 10
       - name: Upload test videos
         uses: actions/upload-artifact@v2
         if: always()
         with:
           name: cypress-videos
           path: e2e/cypress/videos
+          retention-days: 10
