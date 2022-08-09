@@ -111,6 +111,7 @@ jobs:
       # Build
       - name: Build frontend assets
         env:
+          NODE_OPTIONS: '--max_old_space_size=4096'
           REACT_APP_AGORA_APP_ID: ${{ secrets.AGORA_APP_ID }}
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           REACT_APP_FIREBASE_STORAGE_BUCKET: cypress.appspot.com
