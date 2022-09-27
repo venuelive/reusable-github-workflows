@@ -146,7 +146,7 @@ jobs:
         working-directory: frontend
 
       # Run tests
-      - name: Run cypress tests
+      - name: Run cypress tests on Chrome
         uses: cypress-io/github-action@v4
         with:
           browser: chrome
@@ -154,6 +154,20 @@ jobs:
           headless: true
           record: ${{ !!secrets.CYPRESS_RECORD_KEY }}
           group: ${{ secrets.CYPRESS_RECORD_KEY && 'Chrome' }}
+          working-directory: e2e
+          wait-on: "http://localhost:3000, http://localhost:5000"
+          wait-on-timeout: 300
+        env:
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+      - name: Run cypress tests on Webkit
+        uses: cypress-io/github-action@v4
+        with:
+          browser: webkit
+          config: defaultCommandTimeout=30000,videoCompression=false
+          headless: true
+          record: ${{ !!secrets.CYPRESS_RECORD_KEY }}
+          group: ${{ secrets.CYPRESS_RECORD_KEY && 'Webkit' }}
           working-directory: e2e
           wait-on: "http://localhost:3000, http://localhost:5000"
           wait-on-timeout: 300
