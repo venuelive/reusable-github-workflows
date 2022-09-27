@@ -111,7 +111,7 @@ jobs:
       # Build
       - name: Build frontend assets
         env:
-          NODE_OPTIONS: '--max_old_space_size=4096'
+          NODE_OPTIONS: "--max_old_space_size=4096"
           REACT_APP_AGORA_APP_ID: ${{ secrets.AGORA_APP_ID }}
           REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY }}
           REACT_APP_FIREBASE_STORAGE_BUCKET: cypress.appspot.com
@@ -145,7 +145,7 @@ jobs:
 
       # Run tests
       - name: Run cypress tests
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v4
         with:
           browser: chrome
           config: defaultCommandTimeout=30000,videoCompression=false
