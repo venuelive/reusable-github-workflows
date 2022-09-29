@@ -151,7 +151,6 @@ jobs:
         with:
           browser: chrome
           config: defaultCommandTimeout=30000,videoCompression=false
-          headless: true
           record: ${{ !!secrets.CYPRESS_RECORD_KEY }}
           group: ${{ secrets.CYPRESS_RECORD_KEY && 'Chrome' }}
           working-directory: e2e
@@ -165,7 +164,6 @@ jobs:
         with:
           browser: webkit
           config: defaultCommandTimeout=30000,videoCompression=false
-          headless: true
           record: ${{ !!secrets.CYPRESS_RECORD_KEY }}
           group: ${{ secrets.CYPRESS_RECORD_KEY && 'Webkit' }}
           working-directory: e2e
