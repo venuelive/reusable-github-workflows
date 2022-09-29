@@ -85,6 +85,8 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: "16.14.0"
+      - name: Set up webkit
+        run: npx playwright install-deps webkit
       - name: Get yarn cache directory path
         id: yarn-cache-dir-path
         run: echo "::set-output name=dir::$(yarn cache dir)"
