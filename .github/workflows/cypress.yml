@@ -6,12 +6,12 @@ on:
         default: master
         required: false
         type: string
-      venue-ui-ref:
-        default: master
+      live-app-ref:
+        default: main
         required: false
         type: string
-      venue-rails-ref:
-        default: master
+      live-api-ref:
+        default: main
         required: false
         type: string
     secrets:
@@ -62,15 +62,15 @@ jobs:
       - name: Checkout frontend
         uses: actions/checkout@v3
         with:
-          repository: venuelive/venue-ui
-          ref: ${{ inputs.venue-ui-ref }}
+          repository: venuelive/live-app
+          ref: ${{ inputs.live-app-ref }}
           token: ${{ secrets.GH_PAT }}
           path: frontend
       - name: Checkout backend
         uses: actions/checkout@v3
         with:
-          repository: venuelive/venue-rails
-          ref: ${{ inputs.venue-rails-ref }}
+          repository: venuelive/live-api
+          ref: ${{ inputs.live-api-ref }}
           token: ${{ secrets.GH_PAT }}
           path: backend
 
